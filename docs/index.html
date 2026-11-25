@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Communication progressive du français · Interactive course</title><style>:root{
+  --bg:#f7f8f6; --panel:#ffffff; --ink:#1f2a2b; --muted:#66706f; --line:#dfe5e2;
+  --accent:#0f7b6c; --accent-2:#0a5c51; --accent-soft:#dcf2ee;
+  --bleu:#2b59c3; --rouge:#d62839;
+  --good:#2f8a4f; --good-soft:#dff3e5; --bad:#c2402a; --bad-soft:#fbe3de;
+  --m:#2f6db5; --m-soft:#e2eefb; --f:#c2185b; --f-soft:#fbe3ee; --pl:#7b4fb5; --pl-soft:#efe6fb;
+  --radius:14px; --shadow:0 1px 2px rgba(20,40,40,.06),0 4px 14px rgba(20,40,40,.07);
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --serif:Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141a1a; --panel:#1d2525; --ink:#e9f0ee; --muted:#9fb0ac; --line:#304040;
+  --accent:#3fbfa8; --accent-2:#7fe0cc; --accent-soft:#183731;
+  --good:#5cc27f; --good-soft:#1d3324; --bad:#ef7a64; --bad-soft:#3d221d;
+  --m:#7fb0ef; --m-soft:#1e2b3b; --f:#f07aa8; --f-soft:#3a2030; --pl:#b896ee; --pl-soft:#2c2340;
+  --shadow:none;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--accent-2)}
+.fr{font-weight:600;line-height:1.4}
+.pr{color:var(--muted);font-style:italic;font-size:14px}
+.en{color:var(--muted)}
+body.no-pr .pr{display:none} body.no-en .en{display:none}
+b.say{color:var(--accent-2);cursor:pointer;border-bottom:1px dotted var(--accent)}
+b.say:hover{background:var(--accent-soft)}
+/* gender colours (switchable) */
+.g-m{color:var(--m)!important} .g-f{color:var(--f)!important} .g-pl{color:var(--pl)!important}
+b.say.g-m{border-bottom-color:var(--m)} b.say.g-f{border-bottom-color:var(--f)} b.say.g-pl{border-bottom-color:var(--pl)}
+body.no-gc .g-m,body.no-gc .g-f,body.no-gc .g-pl{color:inherit!important}
+.gdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:-3px}.gdot.m{background:var(--m)}.gdot.f{background:var(--f)}
+
+/* header */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top::before{content:"";display:block;height:4px;background:linear-gradient(90deg,var(--bleu) 33.3%,#fff 33.3% 66.6%,var(--rouge) 66.6%)}
+.top-inner{max-width:1080px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;min-width:0;flex:1}
+.brand small{color:var(--muted);font-size:12px}
+.brand b{font-size:17px}
+.toggles{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 11px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-2);font-weight:600}
+.progress{height:4px;background:var(--line)} .progress>div{height:100%;background:var(--accent);transition:width .4s}
+nav.tabs{max-width:1080px;margin:0 auto;padding:8px 12px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a{flex:none;text-decoration:none;color:var(--muted);padding:8px 12px;border-radius:10px 10px 0 0;font-size:14px;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs a.active{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+nav.tabs a .tick{color:var(--good);margin-inline-start:4px}
+
+main{max-width:1080px;margin:0 auto;padding:18px 16px 80px}
+h2{margin:6px 0 4px;font-size:24px} h3{margin:18px 0 8px;font-size:18px}
+.h2en{font-size:16px;font-weight:400}
+.lead{color:var(--muted);margin:0 0 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stack>*+*{margin-top:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:10px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-2)}
+.btn.small{padding:4px 10px;font-size:13px}
+.play{border:none;background:var(--accent-soft);color:var(--accent-2);width:34px;height:34px;border-radius:50%;flex:none;display:inline-grid;place-items:center;font-size:14px;vertical-align:middle}
+.play:hover{background:var(--accent);color:#fff}
+.play.speaking{background:var(--accent);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.1)}}
+.banner{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.done-btn{margin-top:22px}
+.muted{color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 16px}
+
+/* illustrations */
+.scene-svg{width:100%;height:auto;display:block;border-radius:12px}
+.scene-wrap{margin:10px 0 4px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.actor .bob{transform-box:fill-box;transform-origin:50% 100%}
+.actor.talking .bob{animation:talk .55s ease-in-out infinite alternate}
+@keyframes talk{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+.actor.talking{filter:drop-shadow(0 0 6px rgba(255,205,0,.9))}
+.av{flex:none;border-radius:50%}
+
+/* overview */
+.hero2{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:center;padding:12px}
+.hero-art{border-radius:12px;overflow:hidden}
+.hero-txt .fr.big{font-family:var(--serif);font-size:32px;color:var(--accent-2);line-height:1.2;margin:6px 0}
+.rub-badge{display:inline-block;color:#fff;border-radius:999px;padding:2px 12px;font-size:13px;font-weight:700;letter-spacing:.03em}
+.r1{background:#0f7b6c}.r2{background:#2b59c3}.r3{background:#b5652b}.r4{background:#a3407e}.r5{background:#5b4fb5}.r6{background:#c0392b}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.glance{display:flex;flex-direction:column;gap:10px}
+.gl{display:flex;gap:10px;align-items:flex-start}.gl-ic{font-size:24px;width:34px;text-align:center}
+.goals li{margin:4px 0}
+.path{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.path a{text-decoration:none;color:var(--ink)}
+.path .step{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);display:flex;gap:10px;align-items:center;line-height:1.25}
+.path .step.done{border-color:var(--good);background:var(--good-soft)}
+.path .num{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-2);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.path .done .num{background:var(--good);color:#fff}
+
+/* dialogue */
+.dlg-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.dtitle{font-size:20px;font-family:var(--serif)}
+.sit-n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:14px}
+.sit-n:empty{display:none}
+.bubbles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.bub{display:flex;gap:10px;align-items:flex-start;max-width:88%}
+.bub.right{align-self:flex-end;flex-direction:row-reverse}
+.bub .body{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:8px 12px;cursor:pointer;transition:background .2s}
+.bub .who{font-size:12px;color:var(--muted);font-weight:600}
+.bub .fr.line{font-size:19px;display:block}
+.bub.active .body{background:var(--accent-soft);border-color:var(--accent)}
+.bub.m .who{color:var(--m)} .bub.f .who{color:var(--f)}
+.stage-dir{align-self:center;font-style:italic;color:var(--muted);font-size:14px;background:var(--bg);border-radius:999px;padding:2px 14px}
+.hidetext .bub .fr.line,.hidetext .bub .en{filter:blur(7px)} .hidetext .bub.revealed .fr.line,.hidetext .bub.revealed .en{filter:none}
+.roleplay .bub.mine:not(.revealed) .fr.line,.roleplay .bub.mine:not(.revealed) .en{filter:blur(7px)}
+.roleplay .bub.mine .body{border:2px dashed var(--accent)}
+.shadow-cue{font-size:14px;color:var(--accent-2);font-weight:700;min-height:22px;margin-top:6px}
+.dgloss{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.gchip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:14px;cursor:pointer;background:var(--bg)}
+
+/* vocabulary */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.picdict{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.picdict.small{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.pd{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);border-top:5px solid var(--line);border-radius:14px;background:var(--panel);padding:10px 6px;text-align:center;box-shadow:var(--shadow);transition:transform .15s}
+.pd:hover{transform:translateY(-2px)}
+.pd .pd-pic{font-size:42px;line-height:1.15}
+.picdict.small .pd .pd-pic{font-size:34px}
+.pd .fr{font-size:16px}.pd .en{font-size:12px}
+.pd-m{border-top-color:var(--m)}.pd-f{border-top-color:var(--f)}.pd-pl{border-top-color:var(--pl)}
+body.no-gc .pd{border-top-color:var(--line)}
+.vcard{display:flex;flex-direction:column;gap:2px;position:relative;cursor:pointer;border-left:5px solid var(--line)}
+.vc-m{border-left-color:var(--m)}.vc-f{border-left-color:var(--f)}.vc-pl{border-left-color:var(--pl)}
+.vcard .pic{font-size:30px;line-height:1.2}
+.vcard .fr{font-size:20px}
+.vcard .play{position:absolute;top:12px;right:12px}
+.vcard .box{position:absolute;top:54px;right:14px;font-size:11px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;background:var(--accent-soft);color:var(--accent-2);border-radius:6px;padding:1px 6px;margin-top:4px;width:max-content}
+.g-tag-m{background:var(--m-soft);color:var(--m)}.g-tag-f{background:var(--f-soft);color:var(--f)}.g-tag-pl{background:var(--pl-soft);color:var(--pl)}
+.flash-wrap{max-width:440px;margin:0 auto;text-align:center}
+.flash{perspective:1000px;height:270px;cursor:pointer;margin:10px 0}
+.flash-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flash.flipped .flash-inner{transform:rotateY(180deg)}
+.flash .face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:18px;border:1px solid var(--line);border-top:8px solid var(--line);background:var(--panel);box-shadow:var(--shadow);padding:16px}
+.flash.gb-m .face{border-top-color:var(--m)}.flash.gb-f .face{border-top-color:var(--f)}.flash.gb-pl .face{border-top-color:var(--pl)}
+.flash .back{transform:rotateY(180deg);background:var(--accent-soft)}
+.flash .fr{font-size:32px}
+.flash .pic{font-size:50px}
+
+/* grammar + infographics */
+.gblock h3{margin-top:0;font-size:20px}
+.gblock p{margin:8px 0}
+.after{border-top:1px dashed var(--line);margin-top:12px}
+table.g{border-collapse:collapse;width:100%;margin-top:10px}
+table.g td,table.g th{border-bottom:1px solid var(--line);padding:8px;text-align:left}
+table.g td.frcell{font-size:18px;white-space:nowrap}
+figure.info{margin:14px 0;padding:14px;border-radius:14px;background:linear-gradient(180deg,var(--bg),var(--panel));border:1px solid var(--line)}
+figure.info figcaption{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-2);font-weight:800;margin-bottom:10px}
+.gnote{margin-top:10px;font-size:14px;background:var(--accent-soft);border-radius:10px;padding:8px 12px}
+.schip{display:inline-block;margin:3px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 12px;cursor:pointer;font-weight:600}
+.schip .en{font-weight:400;font-size:13px}
+.end{color:var(--rouge);font-weight:800}
+/* gender columns */
+.gcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.gcol{border-radius:12px;padding:10px;border:2px solid}
+.gc-m{border-color:var(--m);background:var(--m-soft)}.gc-f{border-color:var(--f);background:var(--f-soft)}.gc-pl{border-color:var(--pl);background:var(--pl-soft)}
+.ghead{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.gbadge{font-family:var(--serif);font-size:22px;font-weight:800;border-radius:10px;padding:0 10px;color:#fff}
+.gc-m .gbadge{background:var(--m)}.gc-f .gbadge{background:var(--f)}.gc-pl .gbadge{background:var(--pl)}
+/* merges */
+.merges{display:flex;flex-direction:column;gap:8px}
+.mrow,.eq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;cursor:pointer}
+.eq{justify-content:center;margin:12px 0 0}
+.mb{display:inline-grid;place-items:center;min-width:48px;padding:4px 10px;border-radius:10px;font-weight:800;font-size:18px;color:#fff;font-family:var(--serif)}
+.mb-p{background:#555}.mb-m{background:var(--m)}.mb-f{background:var(--f)}.mb-pl{background:var(--pl)}.mb-x{background:#888}
+.mb-r{background:var(--panel);color:var(--ink);border:2px dashed var(--muted)}
+.mb-r.fused{background:var(--rouge);color:#fff;border:2px solid var(--rouge);box-shadow:0 0 0 4px rgba(214,40,57,.15)}
+.op{font-weight:800;color:var(--muted);font-size:18px}
+.mex{margin-left:8px}
+.nomerge .mb-r{opacity:.9}
+/* scale */
+.scale{position:relative;height:196px;margin:0 50px}
+.sbar{position:absolute;left:0;right:0;top:80px;height:12px;border-radius:6px}
+.smark{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;width:120px;font-size:14px;line-height:1.2}
+.smark.up{top:0;justify-content:flex-end;height:78px}
+.smark.dn{top:94px}
+.smark .spic{font-size:20px}
+.smark.up::after{content:"";width:2px;height:8px;background:var(--muted)}
+.smark.dn::before{content:"";width:2px;height:8px;background:var(--muted)}
+.smark .en{font-size:12px}
+.sends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}
+/* ladder */
+.ladder{display:flex;flex-direction:column;gap:8px}
+.rung{display:flex;gap:10px;align-items:center;border-left:6px solid;border-radius:10px;background:var(--panel);padding:6px 10px}
+.rname{color:#fff;border-radius:8px;padding:2px 10px;font-weight:700;display:flex;flex-direction:column;line-height:1.2;min-width:96px}
+.rname small{font-weight:400;opacity:.85}
+/* conjugation */
+.conj{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.cverb{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.cinf{background:var(--accent);color:#fff;padding:6px 10px;cursor:pointer}.cinf .fr{color:#fff;font-size:18px}.cinf .en{color:#e8fffa}
+.cform{display:flex;gap:8px;padding:4px 10px;border-top:1px solid var(--line);cursor:pointer}
+.cform:hover{background:var(--accent-soft)}
+.cform .cp{color:var(--muted);width:64px;flex:none;font-size:13px;padding-top:2px}
+.cform .fr{font-size:17px}
+.qzbox{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+/* compare */
+.cmp{display:grid;gap:10px}
+.cmpcol{border:2px solid;border-radius:12px;overflow:hidden;background:var(--panel)}
+.cmphead{color:#fff;font-weight:800;padding:6px 10px;font-size:18px;font-family:var(--serif);display:flex;flex-direction:column;line-height:1.2}
+.cmphead small{font-family:var(--ui);font-weight:400;font-size:12px;opacity:.9}
+.cmppic{text-align:center;padding:6px}.cmppic.emo{font-size:46px}
+.cmplines{padding:4px 10px 10px}.cl{padding:3px 0;cursor:pointer;display:flex;flex-direction:column}.cl .en{font-size:13px}
+@media (max-width:640px){.cmp{grid-template-columns:1fr!important}}
+/* documents */
+.doc-fig{display:flex;flex-direction:column;align-items:center}
+.doc{width:min(100%,420px);border-radius:10px;padding:16px 18px;box-shadow:0 6px 20px rgba(0,0,0,.18);position:relative}
+.doc-title{font-weight:800;font-size:20px;text-align:center}
+.doc-sub{text-align:center;font-size:13px;opacity:.8;margin-bottom:6px}
+.doc-row{display:flex;gap:6px;align-items:baseline;padding:3px 0;cursor:pointer}
+.doc-row .dots{flex:1;border-bottom:2px dotted currentColor;opacity:.35}
+.doc-foot{text-align:center;font-size:13px;margin-top:8px;opacity:.85}
+.doc-chalk{background:#2c3a2f;color:#f2f2e8;font-family:"Comic Sans MS","Chalkboard SE",cursive;border:8px solid #8a5a2b}
+.doc-board{background:#111;color:#ffcd00;font-family:ui-monospace,Menlo,monospace}.doc-board .doc-title{color:#fff;letter-spacing:.2em}
+.doc-ticket{background:#fffbe8;color:#222;border:2px dashed #b99a2b;font-family:ui-monospace,Menlo,monospace}
+.doc-receipt{background:#fff;color:#222;font-family:ui-monospace,Menlo,monospace;clip-path:polygon(0 0,100% 0,100% 96%,95% 100%,90% 96%,85% 100%,80% 96%,75% 100%,70% 96%,65% 100%,60% 96%,55% 100%,50% 96%,45% 100%,40% 96%,35% 100%,30% 96%,25% 100%,20% 96%,15% 100%,10% 96%,5% 100%,0 96%)}
+.doc-menu{background:#fdf6e3;color:#3a2a1e;font-family:var(--serif);border:3px double #7a3b1d}
+.doc-form{background:#fff;color:#222;border:1px solid #bbb;border-top:10px solid var(--bleu)}
+.doc-label{background:#fff8d6;color:#3a2a1e;border:2px solid #e0b100;border-radius:16px}
+/* minis + pattern */
+.minis{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.minic{display:flex;flex-direction:column;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel);cursor:pointer;min-width:120px}
+.minic .en{font-size:12px}
+.pattern{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pfix{background:var(--accent);color:#fff;border-radius:10px;padding:6px 12px;font-weight:700;cursor:pointer}
+.pslot{display:inline-flex;flex-direction:column;border:2px dashed var(--accent);border-radius:10px;padding:2px 8px;font-weight:600}
+.pslot span{cursor:pointer;padding:1px 0}.pslot span:hover{text-decoration:underline}
+/* flow (conversation map) */
+.flow{position:relative;display:flex;flex-direction:column;gap:6px}
+.flow::before{content:"";position:absolute;left:50%;top:44px;bottom:6px;width:3px;background:var(--line);transform:translateX(-50%)}
+.lane-heads{display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px}
+.lane-heads span{display:flex;gap:6px;align-items:center}
+.fstep{display:flex;position:relative}
+.fstep.l{justify-content:flex-start}.fstep.r{justify-content:flex-end}
+.fcard{width:calc(50% - 22px);display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;box-shadow:var(--shadow)}
+.fstep.l .fcard{border-left:5px solid var(--bleu)}.fstep.r .fcard{border-right:5px solid var(--rouge)}
+.fn{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px}
+.fcard .en{font-size:13px}.fcard .alt{font-size:12px;color:var(--muted);margin-top:2px}
+@media (max-width:640px){.flow::before{display:none}.fcard{width:92%}}
+
+/* widgets */
+.widget{margin-top:14px;padding:14px;border-radius:12px;background:var(--bg);border:2px dashed var(--accent)}
+.widget .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-2);font-weight:800;margin-bottom:8px}
+.result{font-size:40px;text-align:center;margin:8px 0;min-height:60px}
+.cap{font-size:15px}
+.spool{display:flex;flex-wrap:wrap;gap:6px;min-height:46px;padding:8px;border-radius:10px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px}
+.scols{display:grid;gap:8px}
+.scol2{border:2px solid;border-radius:12px;min-height:110px;cursor:pointer;background:var(--panel);overflow:hidden}
+.sch{color:#fff;font-weight:700;padding:4px 10px;text-align:center}
+.sin{display:flex;flex-wrap:wrap;gap:4px;padding:6px}
+.tile.small{font-size:14px;padding:1px 8px}
+.pricetag{display:flex;justify-content:center;margin:6px 0}
+.pt-num{background:#ffcd00;color:#1f2a2b;font-weight:800;font-size:34px;padding:4px 22px 4px 30px;border-radius:6px 30px 30px 6px;position:relative;font-family:var(--serif)}
+.pt-num::before{content:"";position:absolute;left:10px;top:50%;width:10px;height:10px;border-radius:50%;background:var(--bg);transform:translateY(-50%)}
+.money{display:inline-flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:4px 0}
+.note{display:inline-grid;place-items:center;width:54px;height:30px;border-radius:4px;font-size:12px;font-weight:800;color:#fff}
+.n50{background:#e07b39}.n20{background:#3b78c2}.n10{background:#c0392b}.n5{background:#7f8c8d}
+.coin{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:radial-gradient(#f5d68a,#c9a227);font-size:10px;font-weight:800;color:#5a4400;border:2px solid #b0901a}
+.coin.small{width:24px;height:24px;background:radial-gradient(#e8b48a,#b5652b);color:#fff;border-color:#8a4a1a;font-size:9px}
+.clockrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center}
+.ck-big{font-size:36px;font-weight:800;font-family:ui-monospace,Menlo,monospace}
+.ck-words .fr{font-size:20px}
+
+/* expressions */
+.xhead{display:flex;gap:10px;align-items:center;margin-bottom:8px;font-size:17px}
+.xic{font-size:26px}
+.xitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.xitem{display:flex;justify-content:space-between;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer;background:var(--bg)}
+.xitem:hover{border-color:var(--accent)}
+.xitem .fr{font-size:17px}.xitem .en{font-size:13px}
+.reg{font-size:11px;font-weight:700;border-radius:8px;padding:2px 8px;display:flex;flex-direction:column;align-items:center;line-height:1.15;flex:none}
+.reg small{font-weight:400;font-size:10px}
+.reg-poli{background:#e2eefb;color:#2b59c3}.reg-std{background:#e5f4e8;color:#2f8a4f}.reg-fam{background:#fdecd8;color:#b5652b}.reg-sout{background:#efe6fb;color:#7b4fb5}
+.xreply{margin-top:8px;font-size:14px;color:var(--muted)}
+
+/* sounds */
+.letter{display:flex;gap:14px}
+.letter .glyph{font-size:30px;font-weight:800;line-height:1.1;min-width:90px;height:80px;padding:0 8px;display:grid;place-items:center;border-radius:16px;background:var(--accent-soft);color:var(--accent-2);flex:none;cursor:pointer;text-align:center;font-family:var(--serif)}
+.ex{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 12px;margin:3px;cursor:pointer;background:var(--panel)}
+.ex .fr{font-size:17px}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+.pair .side{text-align:center;padding:10px;border:1px solid var(--line);border-radius:12px;cursor:pointer;background:var(--panel)}
+.pair .side .fr{font-size:26px;display:block}
+.vs{color:var(--muted);font-size:12px;text-align:center;max-width:160px}
+
+/* quiz */
+.quiz{max-width:680px;margin:0 auto}
+.qhead{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:8px}
+.qtag{background:var(--accent-soft);color:var(--accent-2);border-radius:6px;padding:0 6px;font-weight:600}
+.qbar{height:6px;border-radius:6px;background:var(--line);overflow:hidden;margin-bottom:14px}.qbar>div{height:100%;background:var(--accent);transition:width .3s}
+.qtext{font-size:18px;font-weight:600;margin-bottom:10px}
+.qpic{font-size:54px;text-align:center}
+.qsentence{font-size:24px;text-align:center;margin:10px 0}
+.qsentence .blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--accent);color:var(--accent-2)}
+.opts{display:grid;gap:8px}
+.opt{text-align:start;border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 14px;font-size:16px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.correct{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.feedback{margin-top:12px;padding:10px 14px;border-radius:12px;font-size:15px}
+.feedback.good{background:var(--good-soft);color:var(--good)} .feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback .ex-text{color:var(--ink);display:block;margin-top:4px}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:56px;padding:8px;border-radius:12px}
+.tiles.lines{flex-direction:column;align-items:stretch}.tiles.lines .tile{text-align:left;font-size:16px}
+.tiles.answer{border:2px dashed var(--line);margin-bottom:8px}
+.tile{font-size:18px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:2px 14px}
+.big-play{width:72px;height:72px;font-size:28px;margin:6px auto 14px;display:grid}
+.score{font-size:48px;font-weight:800;text-align:center;color:var(--accent-2)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.match .mi{border:2px solid var(--line);background:var(--panel);border-radius:10px;padding:8px;text-align:center;min-height:52px}
+.match .mi .fr{font-size:17px}
+.match .mi.sel{border-color:var(--accent);background:var(--accent-soft)}
+.match .mi.ok{border-color:var(--good);background:var(--good-soft);opacity:.55}
+.match .mi.no{border-color:var(--bad);background:var(--bad-soft)}
+.tin{font:inherit;font-size:18px;padding:8px 10px;border-radius:10px;border:2px solid var(--accent);background:var(--panel);color:var(--ink);min-width:120px}
+.tin.ok{border-color:var(--good);background:var(--good-soft)} .tin.no{border-color:var(--bad);background:var(--bad-soft)}
+.frkeys{margin:8px 0}.frkeys .chip{font-size:16px;font-weight:700;padding:3px 11px}
+
+/* role-play */
+.rp{display:flex;flex-direction:column;gap:10px}
+.rp-body{display:flex;flex-direction:column;gap:10px}
+.memo{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.memo span{background:#fff8d6;color:#5a4400;border:1px solid #e0b100;border-radius:6px;padding:1px 8px;font-size:13px;transform:rotate(-1deg)}
+.yourturn{background:var(--accent-soft);border-radius:10px;padding:8px 12px}
+.rec{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rec .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bad);animation:pulse 1s infinite}
+
+/* culture */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.ccard{display:flex;gap:12px;border-top:5px solid var(--bleu)}
+.ccard:nth-child(3n+2){border-top-color:var(--rouge)}.ccard:nth-child(3n){border-top-color:var(--accent)}
+.cic{font-size:34px;flex:none}
+.ckind{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.tipcard{display:flex;gap:12px}
+.tipcard .ic{font-size:28px;flex:none}
+.mist{display:flex;flex-direction:column;gap:6px}
+.mrow2{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.no-say{color:var(--bad);text-decoration:line-through;text-decoration-thickness:1px}
+.yes-say{color:var(--good);cursor:pointer}
+@media (max-width:640px){.mrow2{grid-template-columns:1fr}}
+
+/* tests */
+.tile.sel{border-color:var(--accent);background:var(--accent-soft)}
+.tile.ok{border-color:var(--good);background:var(--good-soft)}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+.titems{padding-inline-start:22px;margin:6px 0} .titems li{margin:10px 0}
+.qsent .fr{font-size:17px}
+.qsent select{font-size:16px;max-width:100%;padding:2px 6px;border-radius:8px;border:2px solid var(--accent);background:var(--panel);color:var(--ink);margin:0 4px}
+.qsent select.ok{border-color:var(--good);background:var(--good-soft)} .qsent select.no{border-color:var(--bad);background:var(--bad-soft)}
+.blank{display:inline-block;min-width:60px;border-bottom:2px solid var(--accent);color:var(--accent-2);text-align:center}
+.fb{font-size:14px;margin-top:2px}
+.markbox{border:2px solid var(--accent);border-radius:10px;min-width:56px;text-align:center;display:flex;flex-direction:column;line-height:1.2;padding:4px}
+.markbox .got{font-weight:800;font-size:18px;color:var(--accent-2);border-bottom:1px solid var(--line)} .markbox .of{font-size:13px;color:var(--muted)}
+.tsec.full{border-color:var(--good)} .tsec.part{border-color:var(--accent)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:4px 20px}
+.tgrid .qsent{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tgrid .tin{min-width:0;width:140px;font-size:16px;padding:4px 8px}
+.mini{background:var(--bg);border-radius:10px;padding:8px 12px;border:1px solid var(--line)}
+.opt-l{font-size:16px;text-align:left}
+
+/* course home */
+.home-hero{display:grid;grid-template-columns:1fr 1.1fr;gap:18px;align-items:center}
+.home-hero h1{font-family:var(--serif);font-size:34px;margin:0;line-height:1.15;color:var(--accent-2)}
+.rubrique{margin-top:26px}
+.rubrique h2{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rnum{color:#fff;border-radius:10px;padding:0 12px;font-family:var(--serif)}
+.chapters{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+.lesson-link{display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--ink)}
+.lesson-link .n{font-size:22px;font-weight:800;color:var(--accent-2);width:40px;text-align:center;flex:none}
+.lesson-link .thumb{width:120px;flex:none;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.lesson-link .frt{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--accent-2)}
+.lesson-link:hover{border-color:var(--accent)}
+.soon{opacity:.55}
+.soon .frt{color:var(--muted)}
+.test-link{border-color:var(--accent);background:var(--accent-soft)}
+
+@media (max-width:760px){
+  .brand{flex-basis:100%}
+  .toggles{width:100%}
+  .hero2,.ov-grid,.home-hero{grid-template-columns:1fr}
+  .bub{max-width:100%}
+  .bub .fr.line{font-size:17px}
+  .flash{height:240px}
+  .lesson-link .thumb{width:84px}
+}
+</style></head>
+<body><header class="top"><div class="top-inner"><div class="brand"><small>Interactive course</small><b>Communication progressive du français · débutant</b></div></div></header>
+<main>
+<div class="card home-hero"><div><h1>Communication progressive du français</h1><p class="lead" style="margin-top:8px">An interactive course built on the 40 communication chapters of <i>Communication progressive du français, niveau débutant</i> (CLE International). Each chapter is one <b>acte de parole</b> (asking for something, asking the price, booking, complaining…) practised in real situations.</p>
+<p style="font-size:14px">Every chapter has illustrated dialogues with audio, a shadow mode and a role mode, a picture dictionary and flashcards, grammar infographics with builders, the <i>manières de dire</i>, pronunciation, listening and dictation, book-style activities and role-plays. Each rubrique ends with a test.</p>
+<p class="muted" style="font-size:13px">7 of 40 chapters ready · progress is saved in this browser</p></div><div id="hero-scene"></div></div>
+<section class="rubrique"><h2><span class="rnum" style="background:#0f7b6c">I</span> Faire les courses <span class="muted" style="font-size:16px;font-weight:400">· Shopping and ordering</span></h2><div class="chapters"><a class="card lesson-link" href="c01.html" data-id="c01"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;boulangerie&quot;, &quot;people&quot;: {&quot;La boulang\u00e8re&quot;: &quot;f2&quot;, &quot;Le client&quot;: &quot;m6&quot;}, &quot;staff&quot;: &quot;La boulang\u00e8re&quot;, &quot;title&quot;: &quot;Demander des articles&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 1 · pp. 8–11</span><br><span class="frt">Demander des articles</span><br><span style="font-size:14px">Asking for items</span><br><span class="muted" style="font-size:12px">À la boulangerie-pâtisserie · À la poste</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link" href="c02.html" data-id="c02"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;marche&quot;, &quot;people&quot;: {&quot;Le marchand&quot;: &quot;m2&quot;, &quot;Madame Roux&quot;: &quot;f6&quot;}, &quot;staff&quot;: &quot;Le marchand&quot;, &quot;title&quot;: &quot;Parler des quantit\u00e9s&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 2 · pp. 12–15</span><br><span class="frt">Parler des quantités</span><br><span style="font-size:14px">Talking about quantities</span><br><span class="muted" style="font-size:12px">Au marché · À l&#x27;épicerie</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link" href="c03.html" data-id="c03"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;papeterie&quot;, &quot;people&quot;: {&quot;La vendeuse&quot;: &quot;f5&quot;, &quot;Paul&quot;: &quot;m1&quot;}, &quot;staff&quot;: &quot;La vendeuse&quot;, &quot;title&quot;: &quot;Demander le prix&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 3 · pp. 16–17</span><br><span class="frt">Demander le prix</span><br><span style="font-size:14px">Asking the price</span><br><span class="muted" style="font-size:12px">Dans une papeterie</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link" href="c04.html" data-id="c04"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;poissonnerie&quot;, &quot;people&quot;: {&quot;Le poissonnier&quot;: &quot;m2&quot;, &quot;Madame Perrin&quot;: &quot;f3&quot;}, &quot;staff&quot;: &quot;Le poissonnier&quot;, &quot;title&quot;: &quot;Passer une commande&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 4 · pp. 18–21</span><br><span class="frt">Passer une commande</span><br><span style="font-size:14px">Placing an order</span><br><span class="muted" style="font-size:12px">Chez le poissonnier · Au café</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link" href="c05.html" data-id="c05"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;hotel&quot;, &quot;people&quot;: {&quot;Le r\u00e9ceptionniste&quot;: &quot;m4&quot;, &quot;Madame Diallo&quot;: &quot;f4&quot;}, &quot;staff&quot;: &quot;Le r\u00e9ceptionniste&quot;, &quot;title&quot;: &quot;Faire une r\u00e9servation&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 5 · pp. 22–25</span><br><span class="frt">Faire une réservation</span><br><span style="font-size:14px">Making a reservation</span><br><span class="muted" style="font-size:12px">À l&#x27;hôtel · À la gare</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link" href="c06.html" data-id="c06"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;vetements&quot;, &quot;people&quot;: {&quot;La vendeuse&quot;: &quot;f5&quot;, &quot;Claire&quot;: &quot;f3&quot;}, &quot;staff&quot;: &quot;La vendeuse&quot;, &quot;title&quot;: &quot;Faire des achats&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 6 · pp. 26–29</span><br><span class="frt">Faire des achats</span><br><span style="font-size:14px">Buying clothes and shoes</span><br><span class="muted" style="font-size:12px">Boutique de vêtements · Magasin de chaussures</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link" href="c07.html" data-id="c07"><span class="thumb" data-scene='{&quot;scene&quot;: &quot;fleuriste&quot;, &quot;people&quot;: {&quot;La fleuriste&quot;: &quot;f6&quot;, &quot;Karim&quot;: &quot;m2&quot;}, &quot;staff&quot;: &quot;La fleuriste&quot;, &quot;title&quot;: &quot;H\u00e9siter&quot;}'></span><span style="flex:1;min-width:0"><span class="muted" style="font-size:12px">Chapitre 7 · pp. 30–31</span><br><span class="frt">Hésiter</span><br><span style="font-size:14px">Hesitating</span><br><span class="muted" style="font-size:12px">Chez le fleuriste</span><br><span class="prog muted" style="font-size:12px"></span></span></a><a class="card lesson-link test-link" href="r1-test.html" data-test="r1-test"><span class="n">📝</span><span style="flex:1"><span class="frt">Bilan · Faire les courses</span><br><span style="font-size:14px">Rubrique I test · Shopping and ordering</span><br><span class="muted" style="font-size:12px">Chapters 1–7 · book pp. 8–31 · bilan + mastery test</span><br><span class="prog muted" style="font-size:12px"></span></span></a></div></section><section class="rubrique"><h2><span class="rnum" style="background:#2b59c3">II</span> Se renseigner <span class="muted" style="font-size:16px;font-weight:400">· Finding things out</span></h2><div class="chapters"><div class="card lesson-link soon"><span class="n">8</span><span style="flex:1"><span class="frt">Prendre rendez-vous</span><br><span style="font-size:14px">Making an appointment</span><br><span class="muted" style="font-size:12px">Chez le dentiste · Au cabinet médical · superlatif · imparfait (avoir, être) · pp. 32–35 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">9</span><span style="flex:1"><span class="frt">Demander des renseignements</span><br><span style="font-size:14px">Asking for information</span><br><span class="muted" style="font-size:12px">Station de métro · Association sportive · Office du tourisme · devoir, pouvoir · expressions de temps · interrogation complexe · pp. 36–41 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">10</span><span style="flex:1"><span class="frt">Exprimer une obligation</span><br><span style="font-size:14px">Expressing obligation</span><br><span class="muted" style="font-size:12px">Dans une administration · verbes + « à » · pp. 42–43 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">11</span><span style="flex:1"><span class="frt">Autoriser et interdire</span><br><span style="font-size:14px">Allowing and forbidding</span><br><span class="muted" style="font-size:12px">Dans une station de ski · « c&#x27;est », « il est » + adjectif · pp. 44–45 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">12</span><span style="flex:1"><span class="frt">Vérifier</span><br><span style="font-size:14px">Checking</span><br><span class="muted" style="font-size:12px">Dans une station balnéaire · complément de nom · pp. 46–47 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">13</span><span style="flex:1"><span class="frt">Protester</span><br><span style="font-size:14px">Complaining</span><br><span class="muted" style="font-size:12px">Au camping · futur proche · pp. 48–49 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">14</span><span style="flex:1"><span class="frt">Exprimer des intentions, des projets</span><br><span style="font-size:14px">Intentions and plans</span><br><span class="muted" style="font-size:12px">Louer des vélos · À la banque · pronoms compléments · futur simple · pp. 50–53 · coming soon</span></span></div></div></section><section class="rubrique"><h2><span class="rnum" style="background:#b5652b">III</span> Parler des lieux et des objets <span class="muted" style="font-size:16px;font-weight:400">· Places and things</span></h2><div class="chapters"><div class="card lesson-link soon"><span class="n">15</span><span style="flex:1"><span class="frt">Localiser</span><br><span style="font-size:14px">Saying where things are</span><br><span class="muted" style="font-size:12px">Galeries Lafayette · À la campagne · Un objet perdu · prépositions de lieu · « qui » · pronoms au passé composé · pp. 54–59 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">16</span><span style="flex:1"><span class="frt">S&#x27;informer par téléphone</span><br><span style="font-size:14px">Enquiring by phone</span><br><span class="muted" style="font-size:12px">Une maison à louer · « en » · pp. 60–61 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">17</span><span style="flex:1"><span class="frt">Comparer</span><br><span style="font-size:14px">Comparing</span><br><span class="muted" style="font-size:12px">À propos des vacances · comparatif · pp. 62–63 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">18</span><span style="flex:1"><span class="frt">Caractériser</span><br><span style="font-size:14px">Describing things</span><br><span class="muted" style="font-size:12px">Avant une fête d&#x27;anniversaire · pronoms démonstratifs · pp. 64–65 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">19</span><span style="flex:1"><span class="frt">Exprimer une condition</span><br><span style="font-size:14px">Expressing a condition</span><br><span class="muted" style="font-size:12px">Le temps qu&#x27;il fait · hypothèse réelle, condition · pp. 66–67 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">20</span><span style="flex:1"><span class="frt">Parler d&#x27;un besoin</span><br><span style="font-size:14px">Talking about a need</span><br><span class="muted" style="font-size:12px">Dans un nouveau bureau · subjonctif des verbes en -er · pp. 68–69 · coming soon</span></span></div></div></section><section class="rubrique"><h2><span class="rnum" style="background:#a3407e">IV</span> Parler aux autres <span class="muted" style="font-size:16px;font-weight:400">· Talking to people</span></h2><div class="chapters"><div class="card lesson-link soon"><span class="n">21</span><span style="flex:1"><span class="frt">Saluer et présenter</span><br><span style="font-size:14px">Greeting and introducing</span><br><span class="muted" style="font-size:12px">Dans la rue · verbes pronominaux · pp. 70–71 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">22</span><span style="flex:1"><span class="frt">Excuser et s&#x27;excuser</span><br><span style="font-size:14px">Apologising</span><br><span class="muted" style="font-size:12px">Monsieur « Catastrophe » · plus-que-parfait · pp. 72–73 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">23</span><span style="flex:1"><span class="frt">Téléphoner</span><br><span style="font-size:14px">Telephoning</span><br><span class="muted" style="font-size:12px">Un ami téléphone · Dans une entreprise · pronoms indirects · doubles pronoms · pp. 74–77 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">24</span><span style="flex:1"><span class="frt">Donner des instructions</span><br><span style="font-size:14px">Giving instructions</span><br><span class="muted" style="font-size:12px">Au club de gym · Dans un jardin public · impératif « vous » / « tu » · pp. 78–81 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">25</span><span style="flex:1"><span class="frt">Nier</span><br><span style="font-size:14px">Denying</span><br><span class="muted" style="font-size:12px">Une mère et son fils · passé composé négatif · pp. 82–83 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">26</span><span style="flex:1"><span class="frt">Inviter, accepter, refuser</span><br><span style="font-size:14px">Inviting, accepting, refusing</span><br><span class="muted" style="font-size:12px">Entre voisins · Au travail · adjectifs possessifs · « on » = nous · pp. 84–87 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">27</span><span style="flex:1"><span class="frt">Demander à quelqu&#x27;un de faire quelque chose</span><br><span style="font-size:14px">Asking someone to do something</span><br><span class="muted" style="font-size:12px">Au bureau · discours indirect · pp. 88–89 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">28</span><span style="flex:1"><span class="frt">Proposer</span><br><span style="font-size:14px">Making suggestions</span><br><span class="muted" style="font-size:12px">La préparation d&#x27;un pique-nique · conditionnel présent · pp. 90–91 · coming soon</span></span></div></div></section><section class="rubrique"><h2><span class="rnum" style="background:#5b4fb5">V</span> Parler de soi <span class="muted" style="font-size:16px;font-weight:400">· Talking about yourself</span></h2><div class="chapters"><div class="card lesson-link soon"><span class="n">29</span><span style="flex:1"><span class="frt">Parler de sa santé</span><br><span style="font-size:14px">Talking about your health</span><br><span class="muted" style="font-size:12px">À la pharmacie · Une jambe cassée · Chez le médecin · pronoms indéfinis · passé composé avec « être » · gérondif · pp. 92–97 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">30</span><span style="flex:1"><span class="frt">Parler de ses goûts</span><br><span style="font-size:14px">Talking about likes</span><br><span class="muted" style="font-size:12px">Entre amis · verbes + « de » + infinitif · pp. 98–99 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">31</span><span style="flex:1"><span class="frt">Parler de son curriculum vitae</span><br><span style="font-size:14px">Talking about your CV</span><br><span class="muted" style="font-size:12px">Une baby-sitter · savoir / connaître · pp. 100–101 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">32</span><span style="flex:1"><span class="frt">Demander et donner son opinion</span><br><span style="font-size:14px">Asking for and giving opinions</span><br><span class="muted" style="font-size:12px">Entre collègues · passé récent · pp. 102–103 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">33</span><span style="flex:1"><span class="frt">Exprimer la surprise</span><br><span style="font-size:14px">Expressing surprise</span><br><span class="muted" style="font-size:12px">Une fête d&#x27;anniversaire · nominalisation · pp. 104–105 · coming soon</span></span></div></div></section><section class="rubrique"><h2><span class="rnum" style="background:#c0392b">VI</span> Parler des autres <span class="muted" style="font-size:16px;font-weight:400">· Talking about others</span></h2><div class="chapters"><div class="card lesson-link soon"><span class="n">34</span><span style="flex:1"><span class="frt">Exprimer la certitude ou l&#x27;incertitude</span><br><span style="font-size:14px">Certainty and uncertainty</span><br><span class="muted" style="font-size:12px">Entre deux mères · Enquête policière · « ce qui », « ce que » · tournures impersonnelles · pp. 106–109 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">35</span><span style="flex:1"><span class="frt">Décrire</span><br><span style="font-size:14px">Describing people</span><br><span class="muted" style="font-size:12px">Au commissariat de police · passé composé / imparfait · pp. 110–111 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">36</span><span style="flex:1"><span class="frt">Faire des compliments</span><br><span style="font-size:14px">Paying compliments</span><br><span class="muted" style="font-size:12px">Un dîner entre amies · adverbes · pp. 112–113 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">37</span><span style="flex:1"><span class="frt">Féliciter</span><br><span style="font-size:14px">Congratulating</span><br><span class="muted" style="font-size:12px">Bonnes nouvelles ! · tout / toute(s) / tous · pp. 114–115 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">38</span><span style="flex:1"><span class="frt">Consoler et encourager</span><br><span style="font-size:14px">Consoling and encouraging</span><br><span class="muted" style="font-size:12px">Après un match · voix passive · pp. 116–117 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">39</span><span style="flex:1"><span class="frt">Critiquer</span><br><span style="font-size:14px">Criticising</span><br><span class="muted" style="font-size:12px">À la sortie d&#x27;un match · la cause · pp. 118–119 · coming soon</span></span></div><div class="card lesson-link soon"><span class="n">40</span><span style="flex:1"><span class="frt">Exprimer l&#x27;admiration</span><br><span style="font-size:14px">Expressing admiration</span><br><span class="muted" style="font-size:12px">À la sortie d&#x27;un spectacle · l&#x27;opposition · pp. 120–121 · coming soon</span></span></div></div></section></main>
+<footer>Situations, grammar points and vocabulary follow the book. Dialogues, explanations, illustrations and activities are original.</footer>
+<script>/* Illustration library for the Communication progressive course.
+   Everything is drawn as inline SVG (no image files): characters, shop/scene backdrops and small
+   diagrams used by the grammar infographics. window.ART is used by engine.js. */
+(function () {
+  "use strict";
+
+  /* ---------- cast: the look of each character kind ---------- */
+  // skin, hair colour, hair style, top, bottom, skirt?, extra
+  const CAST = {
+    m1: { skin: "#f1c7a1", hair: "#3b2a1e", hs: "short", top: "#2f6db5", bottom: "#33414f" },
+    m2: { skin: "#c98e62", hair: "#1b1b1b", hs: "short", top: "#1f8a8a", bottom: "#4a3b2e", beard: true },
+    m3: { skin: "#8d5a3b", hair: "#141414", hs: "curly", top: "#e0a526", bottom: "#2c3e50" },
+    m4: { skin: "#f3d2b4", hair: "#9a9a9a", hs: "bald", top: "#7a4b8c", bottom: "#3a3a3a", glasses: true },
+    m5: { skin: "#e9b98f", hair: "#c58a3a", hs: "short", top: "#c0392b", bottom: "#2d4f6b" },
+    m6: { skin: "#f0c8a0", hair: "#5a3a22", hs: "short", top: "#3f7a5a", bottom: "#555", glasses: true },
+    f1: { skin: "#f1c7a1", hair: "#7a2a1c", hs: "long", top: "#a3407e", bottom: "#33414f", skirt: true },
+    f2: { skin: "#c98e62", hair: "#1b1b1b", hs: "bun", top: "#6b4e9b", bottom: "#2c3e50" },
+    f3: { skin: "#f3d2b4", hair: "#d9a74a", hs: "bob", top: "#c0392b", bottom: "#2d4f6b", skirt: true },
+    f4: { skin: "#8d5a3b", hair: "#141414", hs: "curly", top: "#3f7a5a", bottom: "#4a3b2e", skirt: true },
+    f5: { skin: "#e9b98f", hair: "#5a3a22", hs: "long", top: "#d35400", bottom: "#2c3e50" },
+    f6: { skin: "#f3d2b4", hair: "#b8b8b8", hs: "bun", top: "#2f6db5", bottom: "#555", skirt: true, glasses: true }
+  };
+  const SHOES = "#3a2a1e", INK = "#2b2118";
+
+  /* ---------- one standing character; feet at (0,0), about 200 units tall ---------- */
+  // o: { outfit: "apron"|"uniform"|"vest"|"suit"|"coat", oc: outfit colour, phone, sit, wave, hold: emoji }
+  function person(kind, o = {}) {
+    const L = CAST[kind] || CAST.m1, s = L.skin, hc = L.hair;
+    const p = [];
+    // hair behind the head
+    if (L.hs === "long") p.push(`<path d="M-21,-176 Q-24,-200 0,-199 Q24,-200 21,-176 L24,-138 Q0,-130 -24,-138Z" fill="${hc}"/>`);
+    if (L.hs === "bob") p.push(`<path d="M-21,-176 Q-24,-200 0,-199 Q24,-200 21,-176 L22,-158 Q0,-152 -22,-158Z" fill="${hc}"/>`);
+    // legs / skirt
+    if (o.sit) {
+      p.push(`<rect x="-24" y="-92" width="48" height="26" rx="8" fill="${L.bottom}"/>`);
+    } else if (L.skirt) {
+      p.push(`<rect x="-15" y="-60" width="9" height="56" fill="${s}"/><rect x="6" y="-60" width="9" height="56" fill="${s}"/>`);
+      p.push(`<path d="M-26,-94 L26,-94 L33,-52 L-33,-52Z" fill="${L.bottom}"/>`);
+    } else {
+      p.push(`<rect x="-24" y="-94" width="22" height="90" rx="4" fill="${L.bottom}"/><rect x="2" y="-94" width="22" height="90" rx="4" fill="${L.bottom}"/>`);
+    }
+    if (!o.sit) p.push(`<ellipse cx="-13" cy="-3" rx="13" ry="5" fill="${SHOES}"/><ellipse cx="13" cy="-3" rx="13" ry="5" fill="${SHOES}"/>`);
+    // torso
+    const top = o.outfit === "vest" || o.outfit === "suit" ? "#ffffff" : L.top;
+    p.push(`<path d="M-30,-90 L-30,-140 Q-30,-153 -17,-153 L17,-153 Q30,-153 30,-140 L30,-90Z" fill="${top}"/>`);
+    if (o.outfit === "vest") p.push(`<path d="M-30,-90 L-30,-140 Q-30,-153 -17,-153 L-6,-153 L0,-115 L0,-90Z M30,-90 L30,-140 Q30,-153 17,-153 L6,-153 L0,-115 L0,-90Z" fill="${o.oc || "#222"}"/><path d="M-4,-150 L4,-150 L0,-142Z" fill="#222"/>`);
+    if (o.outfit === "suit") p.push(`<path d="M-30,-90 L-30,-140 Q-30,-153 -17,-153 L-8,-153 L0,-112 L0,-90Z M30,-90 L30,-140 Q30,-153 17,-153 L8,-153 L0,-112 L0,-90Z" fill="${o.oc || "#2c3e50"}"/><path d="M-3,-152 L3,-152 L5,-120 L0,-114 L-5,-120Z" fill="#c0392b"/>`);
+    if (o.outfit === "uniform") p.push(`<path d="M-10,-153 L0,-140 L10,-153" fill="none" stroke="#fff" stroke-width="3"/><rect x="10" y="-138" width="12" height="8" rx="2" fill="#ffcd00"/>`);
+    if (o.outfit === "apron") p.push(`<path d="M-21,-140 L21,-140 L26,-60 L-26,-60Z" fill="${o.oc || "#fff"}" stroke="rgba(0,0,0,.12)"/><path d="M-21,-140 L-10,-153 M21,-140 L10,-153" stroke="${o.oc || "#fff"}" stroke-width="3"/><rect x="-11" y="-112" width="22" height="12" rx="2" fill="rgba(0,0,0,.08)"/>`);
+    if (o.outfit === "coat") p.push(`<path d="M-31,-62 L-31,-140 Q-31,-153 -17,-153 L-6,-153 L0,-120 L6,-153 L17,-153 Q31,-153 31,-140 L31,-62Z" fill="${o.oc || "#8a6d4b"}"/><circle cx="0" cy="-104" r="2" fill="#333"/><circle cx="0" cy="-88" r="2" fill="#333"/>`);
+    // arms + hands
+    const arm = o.outfit === "suit" || o.outfit === "vest" ? (o.oc || "#2c3e50") : o.outfit === "coat" ? (o.oc || "#8a6d4b") : L.top;
+    if (o.phone) {
+      p.push(`<rect x="-40" y="-148" width="12" height="58" rx="6" fill="${arm}"/><circle cx="-34" cy="-86" r="7" fill="${s}"/>`);
+      p.push(`<path d="M28,-146 L40,-146 L32,-180 L22,-176Z" fill="${arm}"/><circle cx="25" cy="-180" r="7" fill="${s}"/>`);
+    } else if (o.wave) {
+      p.push(`<rect x="-40" y="-148" width="12" height="58" rx="6" fill="${arm}"/><circle cx="-34" cy="-86" r="7" fill="${s}"/>`);
+      p.push(`<path d="M28,-148 L40,-148 L52,-188 L42,-192Z" fill="${arm}"/><circle cx="48" cy="-196" r="8" fill="${s}"/>`);
+    } else {
+      p.push(`<rect x="-40" y="-148" width="12" height="58" rx="6" fill="${arm}"/><rect x="28" y="-148" width="12" height="58" rx="6" fill="${arm}"/>`);
+      p.push(`<circle cx="-34" cy="-86" r="7" fill="${s}"/><circle cx="34" cy="-86" r="7" fill="${s}"/>`);
+    }
+    // neck + head
+    p.push(`<rect x="-6" y="-161" width="12" height="10" fill="${s}"/><circle cx="-17" cy="-174" r="4" fill="${s}"/><circle cx="17" cy="-174" r="4" fill="${s}"/><circle cx="0" cy="-175" r="17" fill="${s}"/>`);
+    // hair on top
+    if (L.hs === "short") p.push(`<path d="M-18,-178 Q-19,-198 0,-197 Q19,-198 18,-178 Q14,-189 2,-188 Q-10,-189 -18,-178Z" fill="${hc}"/>`);
+    if (L.hs === "long" || L.hs === "bob") p.push(`<path d="M-18,-176 Q-16,-196 0,-195 Q16,-196 18,-176 Q10,-187 -2,-186 Q-11,-185 -18,-176Z" fill="${hc}"/>`);
+    if (L.hs === "bun") p.push(`<circle cx="0" cy="-198" r="9" fill="${hc}"/><path d="M-18,-176 Q-18,-195 0,-195 Q18,-195 18,-176 Q9,-186 0,-186 Q-9,-186 -18,-176Z" fill="${hc}"/>`);
+    if (L.hs === "curly") p.push([[-14, -186], [-6, -192], [3, -193], [11, -189], [16, -181], [-17, -178]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="${hc}"/>`).join(""));
+    if (L.hs === "bald") p.push(`<path d="M-18,-170 Q-19,-182 -14,-186 M18,-170 Q19,-182 14,-186" stroke="${hc}" stroke-width="5" fill="none" stroke-linecap="round"/>`);
+    if (L.beard) p.push(`<path d="M-15,-172 Q-14,-154 0,-153 Q14,-154 15,-172 Q8,-164 0,-164 Q-8,-164 -15,-172Z" fill="${hc}"/>`);
+    // face
+    p.push(`<circle cx="-6" cy="-177" r="2" fill="${INK}"/><circle cx="6" cy="-177" r="2" fill="${INK}"/><path d="M-6,-167 Q0,-162 6,-167" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`);
+    if (kind[0] === "f") p.push(`<circle cx="-10" cy="-170" r="3" fill="#e88" opacity=".35"/><circle cx="10" cy="-170" r="3" fill="#e88" opacity=".35"/>`);
+    if (L.glasses) p.push(`<g stroke="${INK}" stroke-width="1.4" fill="none"><circle cx="-6" cy="-177" r="5"/><circle cx="6" cy="-177" r="5"/><path d="M-1,-177 L1,-177"/></g>`);
+    if (o.phone) p.push(`<text x="18" y="-170" font-size="16">📱</text>`);
+    if (o.hold) p.push(`<text x="22" y="-80" font-size="26">${o.hold}</text>`);
+    return p.join("");
+  }
+  const placed = (kind, x, y, sc, o, who) => `<g class="actor" data-who="${who || ""}" transform="translate(${x},${y}) scale(${sc})"><g class="bob">${person(kind, o)}</g></g>`;
+
+  // head-and-shoulders avatar for speech bubbles and lists
+  function avatar(kind, size = 46, o = {}) {
+    const L = CAST[kind] || CAST.m1;
+    return `<svg class="av" width="${size}" height="${size}" viewBox="-34 -212 68 68" aria-hidden="true"><defs><clipPath id="c${kind}${size}"><circle cx="0" cy="-178" r="33"/></clipPath></defs><circle cx="0" cy="-178" r="33" fill="${L.top}22"/><g clip-path="url(#c${kind}${size})">${person(kind, o)}</g></svg>`;
+  }
+
+  /* ---------- scenery helpers ---------- */
+  const E = (e, x, y, sz = 28) => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" dominant-baseline="central">${e}</text>`;
+  const row = (arr, x0, x1, y, sz) => arr.map((e, i) => E(e, x0 + (arr.length === 1 ? (x1 - x0) / 2 : i * (x1 - x0) / (arr.length - 1)), y, sz)).join("");
+  const shelf = (x, y, w, items, sz = 26, wood = "#a0703c") => `<rect x="${x}" y="${y}" width="${w}" height="6" rx="2" fill="${wood}"/>${row(items, x + 18, x + w - 18, y - sz / 2 - 1, sz)}`;
+  const sign = (t, bg, fg, x = 320, w = 300, y = 10) => `<rect x="${x - w / 2}" y="${y}" width="${w}" height="34" rx="6" fill="${bg}"/><text x="${x}" y="${y + 23}" font-size="17" font-weight="800" letter-spacing="2" text-anchor="middle" fill="${fg}" font-family="Georgia,serif">${t}</text>`;
+  const floor = (c, y = 245) => `<rect x="0" y="${y}" width="640" height="${300 - y}" fill="${c}"/>`;
+  const wall = (c) => `<rect x="0" y="0" width="640" height="300" fill="${c}"/>`;
+  const counter = (x, w, c, top = [], sz = 24, y = 170) => `<rect x="${x}" y="${y}" width="${w}" height="${262 - y}" rx="4" fill="${c}"/><rect x="${x - 6}" y="${y - 6}" width="${w + 12}" height="10" rx="3" fill="${shade(c, -25)}"/>${row(top, x + 24, x + w - 24, y - 6 - sz / 2, sz)}`;
+  const glassCase = (x, w, items, sz = 24) => `<rect x="${x}" y="172" width="${w}" height="90" rx="4" fill="#d9c2a0"/><rect x="${x + 8}" y="178" width="${w - 16}" height="44" rx="3" fill="#e8f4fb" stroke="#b7d5e6"/>${row(items, x + 26, x + w - 26, 202, sz)}<rect x="${x - 6}" y="166" width="${w + 12}" height="8" rx="3" fill="#b99a74"/>`;
+  const awning = (x, w, c1, c2, y = 0, h = 40) => { let s = ""; const n = Math.round(w / 32); for (let i = 0; i < n; i++) s += `<path d="M${x + i * w / n},${y} h${w / n} v${h} q-${w / n / 2},12 -${w / n},0Z" fill="${i % 2 ? c2 : c1}"/>`; return s; };
+  const win = (x, y, w, h, inside = "") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#bfe3f5" stroke="#fff" stroke-width="5"/>${inside}<path d="M${x + w / 2},${y} V${y + h}" stroke="#fff" stroke-width="4"/>`;
+  function shade(hex, amt) { const n = parseInt(hex.slice(1), 16); const c = v => Math.max(0, Math.min(255, v + amt)); return "#" + [c(n >> 16), c((n >> 8) & 255), c(n & 255)].map(v => v.toString(16).padStart(2, "0")).join(""); }
+
+  /* ---------- scenes ---------- */
+  // each: back (drawn behind the people), front (drawn in front: counters), outfit for the staff, staff x / client x
+  const SCENES = {
+    boulangerie: {
+      outfit: "apron", oc: "#fff",
+      back: () => wall("#f6e3c4") + floor("#c9a27a") + sign("BOULANGERIE · PÂTISSERIE", "#7a3b1d", "#ffe9c2", 320, 380) +
+        shelf(40, 98, 260, ["🥖", "🥖", "🥖", "🍞", "🍞"], 30) + shelf(40, 150, 260, ["🥐", "🥐", "🥨", "🥯", "🥐"], 26) +
+        win(400, 60, 200, 120, row(["🌳", "🏠", "🌳"], 420, 580, 140, 30)),
+      front: () => glassCase(50, 260, ["🥧", "🍰", "🧁", "🍫", "🍮"], 26)
+    },
+    poste: {
+      outfit: "uniform",
+      back: () => wall("#fff4c2") + `<rect x="0" y="0" width="640" height="54" fill="#003da5"/>` + floor("#cfd6de") + sign("LA POSTE", "#ffcd00", "#003da5", 320, 200, 10) +
+        `<rect x="60" y="70" width="220" height="80" rx="6" fill="#ffffff" stroke="#ccc"/>` + row(["✉️", "📦", "💌", "📬"], 85, 255, 110, 28) +
+        `<rect x="470" y="80" width="56" height="90" rx="10" fill="#ffcd00" stroke="#c9a000"/><rect x="482" y="100" width="32" height="6" rx="3" fill="#003da5"/>` + E("📮", 600, 130, 34),
+      front: () => counter(50, 270, "#003da5", ["⚖️", "📦", "🖊️", "📄"], 24)
+    },
+    marche: {
+      outfit: "apron", oc: "#3f7a5a",
+      back: () => `<rect x="0" y="0" width="640" height="300" fill="#bfe3f5"/>` + E("☀️", 600, 40, 34) + `<rect x="0" y="180" width="640" height="120" fill="#b9b1a5"/>` +
+        [...Array(16)].map((_, i) => `<ellipse cx="${20 + i * 40}" cy="${270 + (i % 2) * 14}" rx="18" ry="7" fill="#a39a8c"/>`).join("") +
+        awning(30, 300, "#c0392b", "#fff", 30, 36) + `<rect x="36" y="66" width="6" height="110" fill="#7a5230"/><rect x="318" y="66" width="6" height="110" fill="#7a5230"/>` +
+        E("🌳", 470, 120, 80) + E("⛪", 560, 150, 50),
+      front: () => `<rect x="30" y="178" width="300" height="84" rx="4" fill="#8a5a2b"/>` +
+        [0, 1, 2, 3].map(i => `<rect x="${38 + i * 72}" y="160" width="66" height="34" rx="3" fill="#c48a4a" stroke="#8a5a2b"/>`).join("") +
+        row(["🍅", "🥒", "🫑", "🍎"], 71, 287, 170, 22) + row(["🍓", "🍋", "🥕", "🌿"], 71, 287, 226, 22) + `<text x="300" y="214" font-size="12" font-weight="700" fill="#fff">2,50 €/kg</text>`
+    },
+    epicerie: {
+      outfit: "apron", oc: "#7a3b1d",
+      back: () => wall("#efe6d8") + floor("#b5895a") + sign("ÉPICERIE FINE", "#2d4f6b", "#fff", 320, 280) +
+        shelf(30, 90, 270, ["🍝", "🍚", "🫙", "🍯", "🥫"], 26) + shelf(30, 140, 270, ["🍷", "🍾", "💧", "🫒", "🧂"], 26) +
+        shelf(360, 90, 250, ["🥫", "🥫", "🍪", "🍪"], 26, "#7a5230") + shelf(360, 140, 250, ["🧃", "🥛", "🥛", "🧈"], 26, "#7a5230") + shelf(360, 190, 250, ["🍬", "☕", "🍫", "🍵"], 24, "#7a5230"),
+      front: () => counter(40, 270, "#7a5230", ["🧀", "🥚", "🍖", "🧈"], 26)
+    },
+    papeterie: {
+      outfit: null,
+      back: () => wall("#e8eef7") + floor("#c4b49e") + sign("PAPETERIE", "#5b4fb5", "#fff", 320, 220) +
+        shelf(30, 92, 270, ["📒", "📓", "📕", "📗", "📘"], 26) + shelf(30, 145, 270, ["✏️", "🖍️", "📏", "✂️", "📎"], 24) +
+        shelf(360, 92, 250, ["📁", "📂", "🗂️", "📇"], 26, "#7a5230") + shelf(360, 145, 250, ["✉️", "📜", "🖌️", "🖇️"], 24, "#7a5230"),
+      front: () => glassCase(50, 260, ["🖋️", "🖊️", "🖋️", "🖊️", "✒️"], 24) + `<text x="128" y="244" font-size="12" font-weight="700" fill="#5a3a22">32 €</text><text x="232" y="244" font-size="12" font-weight="700" fill="#5a3a22">75 €</text>`
+    },
+    poissonnerie: {
+      outfit: "apron", oc: "#dfeefa",
+      back: () => wall("#dbeef7") + [...Array(10)].map((_, i) => `<rect x="${i * 64}" y="54" width="62" height="2" fill="#bcd8e8"/>`).join("") + floor("#9fb7c4") + sign("POISSONNERIE", "#1f5f8b", "#fff", 320, 260) +
+        E("⚓", 560, 110, 46) + E("🐟", 470, 100, 30) + E("🦞", 520, 160, 30),
+      front: () => `<rect x="30" y="176" width="300" height="86" rx="4" fill="#1f5f8b"/><path d="M24,176 L336,176 L320,150 L40,150Z" fill="#eaf6fb"/>` +
+        row(["🐟", "🦐", "🦀", "🦪", "🐠", "🦞"], 60, 300, 160, 22) + `<text x="40" y="200" font-size="12" font-weight="700" fill="#fff">plateau classique 20 € · mélangé 30 €</text>`
+    },
+    cafe: {
+      outfit: "vest", oc: "#222", clientSit: true,
+      back: () => wall("#7a3b1d") + `<rect x="0" y="150" width="640" height="95" fill="#5a2a12"/>` + floor("#d9c7a8") + sign("CAFÉ DE LA PAIX", "#1b1b1b", "#f5d68a", 320, 280) +
+        `<rect x="222" y="62" width="132" height="92" rx="6" fill="#2c3a2f" stroke="#a0703c" stroke-width="5"/><text x="288" y="84" font-size="13" fill="#fff" text-anchor="middle" font-family="Georgia,serif">MENU à 15 €</text><text x="288" y="104" font-size="10" fill="#ddd" text-anchor="middle">salade de chèvre</text><text x="288" y="120" font-size="10" fill="#ddd" text-anchor="middle">steak-frites</text><text x="288" y="136" font-size="10" fill="#ddd" text-anchor="middle">tarte · glace</text>` +
+        win(430, 60, 170, 90, row(["🗼"], 440, 590, 110, 40)) + `<rect x="430" y="168" width="10" height="80" fill="#3a2a1e"/><rect x="520" y="168" width="10" height="80" fill="#3a2a1e"/><rect x="420" y="150" width="120" height="22" rx="4" fill="#3a2a1e"/>`,
+      front: () => `<ellipse cx="420" cy="196" rx="70" ry="12" fill="#e9e2d0" stroke="#999"/><rect x="415" y="200" width="10" height="60" fill="#555"/><ellipse cx="420" cy="262" rx="30" ry="6" fill="#555"/>` + E("☕", 395, 184, 20) + E("🍷", 445, 182, 20)
+    },
+    hotel: {
+      outfit: "suit", oc: "#7a1f2b", split: true,
+      back: () => wall("#f3ead8") + `<rect x="320" y="0" width="320" height="300" fill="#e2eefb"/>` + floor("#b58d6a") + `<rect x="320" y="245" width="320" height="55" fill="#a9b8c9"/>` +
+        sign("HÔTEL DU MOULIN ★★★", "#7a1f2b", "#ffe9c2", 160, 270) +
+        `<rect x="40" y="62" width="120" height="70" rx="4" fill="#7a5230"/>` + [0, 1, 2, 3, 4, 5].map(i => E("🔑", 58 + (i % 3) * 40, 82 + Math.floor(i / 3) * 30, 16)).join("") + E("🛎️", 230, 110, 30) +
+        `<path d="M320,0 V300" stroke="#fff" stroke-width="6"/>` + win(470, 50, 140, 100, E("🌙", 510, 90, 26)) + E("🛋️", 600, 230, 40) + E("🖼️", 380, 80, 34),
+      front: () => counter(40, 250, "#7a1f2b", ["☎️", "📒", "🖊️"], 24)
+    },
+    gare: {
+      outfit: "uniform",
+      back: () => wall("#d6dde4") + floor("#9aa6b2") + sign("GUICHET · SNCF", "#2b2b6b", "#fff", 170, 230) +
+        `<rect x="506" y="44" width="128" height="104" rx="6" fill="#1b1b1b"/><text x="514" y="64" font-size="12" fill="#ffcd00" font-family="monospace">DÉPARTS</text>` +
+        [["07:58", "LILLE", "TGV"], ["08:28", "LILLE", "TGV"], ["09:12", "LYON", "TGV"], ["09:40", "DIJON", "TER"]].map((r, i) => `<text x="514" y="${86 + i * 17}" font-size="11" fill="#fff" font-family="monospace">${r[0]} ${r[1].padEnd(5, " ")} ${r[2]}</text>`).join("") +
+        E("🕗", 300, 90, 40) + `<rect x="0" y="200" width="640" height="8" fill="#ffcd00" opacity=".5"/>` + E("🚄", 600, 205, 40),
+      front: () => `<rect x="40" y="168" width="260" height="94" rx="4" fill="#4a5a6b"/><rect x="60" y="104" width="220" height="70" fill="#cfe7f3" opacity=".55" stroke="#fff" stroke-width="3"/><rect x="34" y="162" width="272" height="10" rx="3" fill="#2f3b47"/>` + E("🎫", 250, 150, 22)
+    },
+    vetements: {
+      outfit: null,
+      back: () => wall("#f7e7ea") + floor("#d7c3b0") + sign("BOUTIQUE · MODE", "#a3407e", "#fff", 320, 250) +
+        `<rect x="40" y="80" width="240" height="5" rx="2" fill="#777"/><rect x="40" y="80" width="5" height="165" fill="#777"/><rect x="275" y="80" width="5" height="165" fill="#777"/>` + row(["👗", "👚", "👕", "🧥", "👖", "👔"], 64, 256, 112, 30) +
+        `<rect x="470" y="50" width="130" height="195" rx="4" fill="#c0392b"/>` + [0, 1, 2, 3, 4].map(i => `<path d="M${476 + i * 26},52 v190" stroke="#922" stroke-width="2"/>`).join("") + `<text x="535" y="40" font-size="13" text-anchor="middle" font-weight="700" fill="#a3407e">CABINES</text>` +
+        `<rect x="330" y="70" width="70" height="140" rx="35" fill="#cfe7f3" stroke="#bbb" stroke-width="4"/>`,
+      front: () => ""
+    },
+    chaussures: {
+      outfit: null,
+      back: () => wall("#eef0e6") + floor("#c4a98a") + sign("CHAUSSURES", "#3a2a1e", "#f5d68a", 320, 240) +
+        shelf(30, 100, 260, ["👠", "👡", "👢", "👠"], 26) + shelf(30, 150, 260, ["👟", "👞", "🥾", "👟"], 26) +
+        win(380, 60, 220, 110, `<rect x="390" y="130" width="200" height="8" fill="#a0703c"/>` + row(["👡", "👡", "👠"], 410, 570, 115, 28)) + `<text x="490" y="54" font-size="12" text-anchor="middle" font-weight="700" fill="#3a2a1e">VITRINE</text>` +
+        `<rect x="250" y="205" width="110" height="18" rx="4" fill="#7a5230"/>` + E("📦", 300, 236, 22),
+      front: () => ""
+    },
+    fleuriste: {
+      outfit: "apron", oc: "#3f7a5a",
+      back: () => wall("#eaf5e6") + floor("#b8a58a") + sign("FLEURISTE", "#3f7a5a", "#fff", 320, 220) +
+        shelf(30, 110, 270, ["🌷", "🌹", "🌻", "🌼", "🪻"], 30, "#7a5230") + shelf(30, 165, 270, ["🪴", "🌿", "🪴", "🌵"], 30, "#7a5230") +
+        [380, 450, 520, 590].map((x, i) => `<rect x="${x - 22}" y="200" width="44" height="45" rx="5" fill="#9aa6b2"/>${E(["💐", "🌹", "🌷", "🌺"][i], x, 186, 40)}`).join(""),
+      front: () => counter(40, 270, "#7a5230", ["💐", "✂️", "🎀"], 26)
+    },
+    // generic fall-backs for later chapters
+    rue: {
+      outfit: null, noCounter: true,
+      back: () => `<rect width="640" height="300" fill="#bfe3f5"/>` + E("☀️", 600, 40, 30) + `<rect x="0" y="60" width="200" height="185" fill="#e8d3b0"/><rect x="440" y="80" width="200" height="165" fill="#d9c2a0"/>` +
+        [0, 1, 2].map(i => win(20 + i * 60, 90, 40, 50)).join("") + [0, 1, 2].map(i => win(460 + i * 60, 110, 40, 50)).join("") + floor("#a39a8c") + E("🌳", 320, 160, 80),
+      front: () => ""
+    },
+    maison: {
+      outfit: null, noCounter: true,
+      back: () => wall("#f3ead8") + floor("#b58d6a") + win(240, 50, 160, 100, E("🌤️", 320, 90, 30)) + E("🛋️", 90, 215, 70) + E("🪴", 590, 210, 50) + E("🖼️", 500, 90, 40),
+      front: () => ""
+    },
+    bureau: {
+      outfit: "suit", oc: "#2c3e50", noCounter: true,
+      back: () => wall("#e6ecf2") + floor("#9aa6b2") + win(400, 40, 200, 110, E("🏙️", 500, 95, 50)) + E("🗂️", 60, 120, 40) + E("☕", 110, 120, 26),
+      front: () => counter(40, 250, "#7a5230", ["💻", "📞", "📄"], 26)
+    }
+  };
+
+  // dialogue: { scene, people: {name: kind}, staff: name, sit: [names], phone: [names] }
+  function scene(d) {
+    const S = SCENES[d.scene] || SCENES.rue;
+    const names = Object.keys(d.people);
+    const staff = d.staff && d.people[d.staff] ? d.staff : null;
+    const others = names.filter(n => n !== staff);
+    const actors = [];
+    const opt = (n) => ({ outfit: n === staff ? S.outfit : null, oc: S.oc, phone: (d.phone || []).includes(n) || (S.split && n !== staff), sit: (d.sit || []).includes(n) || (S.clientSit && n !== staff), wave: (d.wave || []).includes(n), hold: (d.hold || {})[n] });
+    if (staff) actors.push(placed(d.people[staff], S.split ? 140 : 170, 256, 0.92, opt(staff), staff));
+    const xs = S.split ? [480, 560] : staff ? (others.length > 1 ? [420, 520] : [460]) : others.length > 2 ? [150, 320, 490] : others.length > 1 ? [220, 430] : [320];
+    others.forEach((n, i) => {
+      const o = opt(n), sx = xs[i] || 300 + i * 80;
+      actors.push(placed(d.people[n], o.sit ? 410 : sx, o.sit ? 290 : 262, o.sit ? 0.88 : 0.95, o, n));
+    });
+    const chair = others.some(n => opt(n).sit) ? `<rect x="385" y="150" width="50" height="90" rx="8" fill="#3a2a1e"/>` : "";
+    return `<svg class="scene-svg" viewBox="0 0 640 300" role="img" aria-label="${(d.title || "scene").replace(/"/g, "")}">${S.back()}${chair}${actors.join("")}${S.front ? S.front() : ""}</svg>`;
+  }
+
+  /* ---------- small diagrams for grammar infographics ---------- */
+  const MINI = {
+    dans: `<rect x="20" y="30" width="80" height="60" rx="4" fill="none" stroke="#7a5230" stroke-width="4"/><path d="M20,30 L35,15 L115,15 L100,30" fill="none" stroke="#7a5230" stroke-width="3"/><circle cx="60" cy="72" r="14" fill="#d62839"/>`,
+    sur: `<rect x="15" y="62" width="90" height="8" rx="2" fill="#7a5230"/><rect x="22" y="70" width="6" height="30" fill="#7a5230"/><rect x="92" y="70" width="6" height="30" fill="#7a5230"/><circle cx="60" cy="48" r="14" fill="#d62839"/>`,
+    sous: `<rect x="15" y="40" width="90" height="8" rx="2" fill="#7a5230"/><rect x="22" y="48" width="6" height="52" fill="#7a5230"/><rect x="92" y="48" width="6" height="52" fill="#7a5230"/><circle cx="60" cy="86" r="14" fill="#d62839"/>`,
+    devant: `<rect x="40" y="20" width="60" height="70" rx="4" fill="#cdb79a"/><circle cx="50" cy="80" r="16" fill="#d62839"/>`,
+    derriere: `<circle cx="78" cy="40" r="16" fill="#d62839"/><rect x="20" y="30" width="60" height="70" rx="4" fill="#cdb79a"/>`,
+    acote: `<rect x="15" y="40" width="50" height="60" rx="4" fill="#cdb79a"/><circle cx="92" cy="84" r="16" fill="#d62839"/>`,
+    trop: `<text x="60" y="58" font-size="56" text-anchor="middle" dominant-baseline="central">👖</text><path d="M20,100 H100" stroke="#c2402a" stroke-width="4"/><text x="104" y="40" font-size="26" fill="#c2402a">↓</text>`,
+    assez: `<text x="60" y="58" font-size="56" text-anchor="middle" dominant-baseline="central">👖</text><path d="M20,100 H100" stroke="#2f8a4f" stroke-width="4"/><text x="104" y="40" font-size="26" fill="#2f8a4f">✓</text>`,
+    phone: `<text x="30" y="58" font-size="44" text-anchor="middle" dominant-baseline="central">☎️</text><path d="M55,58 q10,-14 20,0 t20,0" stroke="#d62839" stroke-width="3" fill="none"/><text x="104" y="58" font-size="40" text-anchor="middle" dominant-baseline="central">📱</text>`
+  };
+  const mini = (k, sz = 90) => MINI[k] ? `<svg class="mini-svg" width="${sz}" height="${sz}" viewBox="0 0 120 110" aria-hidden="true">${MINI[k]}</svg>` : "";
+
+  // an analogue clock face for times: ART.clock(7, 58)
+  function clock(hh, mm, sz = 110) {
+    const a = (v, max) => (v / max) * 2 * Math.PI - Math.PI / 2;
+    const hx = 50 + 24 * Math.cos(a((hh % 12) + mm / 60, 12)), hy = 50 + 24 * Math.sin(a((hh % 12) + mm / 60, 12));
+    const mx = 50 + 36 * Math.cos(a(mm, 60)), my = 50 + 36 * Math.sin(a(mm, 60));
+    const ticks = [...Array(12)].map((_, i) => { const t = a(i, 12); return `<path d="M${50 + 40 * Math.cos(t)},${50 + 40 * Math.sin(t)} L${50 + 45 * Math.cos(t)},${50 + 45 * Math.sin(t)}" stroke="#2b2118" stroke-width="${i % 3 ? 1.5 : 3}"/>`; }).join("");
+    return `<svg class="clock-svg" width="${sz}" height="${sz}" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="#fff" stroke="#2b2118" stroke-width="3"/>${ticks}<path d="M50,50 L${hx},${hy}" stroke="#2b2118" stroke-width="5" stroke-linecap="round"/><path d="M50,50 L${mx},${my}" stroke="#d62839" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="50" r="3.5" fill="#2b2118"/></svg>`;
+  }
+
+  // a euro coin / note visual for prices
+  function money(amount) {
+    const e = Math.floor(amount), c = Math.round((amount - e) * 100);
+    const notes = [50, 20, 10, 5], coins = [2, 1]; let left = e; const out = [];
+    notes.forEach(n => { while (left >= n && out.length < 8) { out.push(`<span class="note n${n}">${n} €</span>`); left -= n; } });
+    coins.forEach(n => { while (left >= n && out.length < 10) { out.push(`<span class="coin">${n}€</span>`); left -= n; } });
+    if (c) out.push(`<span class="coin small">${c}c</span>`);
+    return `<span class="money">${out.join("")}</span>`;
+  }
+
+  window.ART = { CAST, person, avatar, scene, mini, clock, money, SCENES };
+})();
+</script>
+<script>
+document.getElementById("hero-scene").innerHTML=ART.scene({scene:"marche",people:{"A":"m2","B":"f3","C":"f6"},staff:"A"});
+document.querySelectorAll("[data-scene]").forEach(el=>{try{el.innerHTML=ART.scene(JSON.parse(el.dataset.scene));}catch(e){}});
+try{const S=JSON.parse(localStorage.getItem("french-comm-v1")||"{}");
+document.querySelectorAll("[data-id]").forEach(a=>{const l=(S.lessons||{})[a.dataset.id];if(!l)return;const n=Object.keys(l.done||{}).length;
+a.querySelector(".prog").textContent=(n>=9?"✓ ":"")+n+"/9 sections"+(l.best&&l.best.practice!=null?" · activités "+l.best.practice+"%":"");});
+document.querySelectorAll("[data-test]").forEach(a=>{const t=(S.tests||{})[a.dataset.test];if(!t||!t.attempts.length)return;const b=m=>{const x=t.attempts.filter(y=>y.mode===m);return x.length?Math.max(...x.map(y=>y.pct))+"%":"—"};
+a.querySelector(".prog").textContent="bilan "+b("book")+" · mastery "+b("mastery");});}catch(e){}
+</script></body></html>
