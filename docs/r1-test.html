@@ -393,6 +393,9 @@ figure.info figcaption{font-size:13px;text-transform:uppercase;letter-spacing:.0
   .flash{height:240px}
   .lesson-link .thumb{width:84px}
 }
+
+.speedbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0 4px;font-size:13px}
+.speedbar .chip{padding:3px 10px}
 </style></head>
 <body><script>window.LESSONS=[];window.COURSE_HOME="index.html";</script><script>// Chapitre 1 · Demander des articles (book pp. 8–11)
 // Situations: 1. À la boulangerie-pâtisserie · 2. À la poste
@@ -3042,6 +3045,7 @@ window.TEST = {
   let S = { lessons: {}, words: {}, prefs: Object.assign({}, DEF) };
   try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch (e) {}
   S.prefs = Object.assign({}, DEF, S.prefs);
+  S.prefs.rate = [0.65, 0.9, 1.05].reduce((a, v) => Math.abs(v - S.prefs.rate) < Math.abs(a - S.prefs.rate) ? v : a, 0.9);
   const LS = S.lessons[L.id] = S.lessons[L.id] || { done: {}, best: {} };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
@@ -3134,17 +3138,23 @@ window.TEST = {
     <footer>Interactive course based on the situations, grammar points and vocabulary of <i>${BOOK}</i> (CLE International). Dialogues, explanations, illustrations and activities are original. Audio is your device's French text-to-speech voice.</footer>`;
     wirePrefs();
   }
+  let refreshChips = () => {};
+  const RATES = [[0.65, "🐢 Slow"], [0.9, "🚶 Normal"], [1.05, "🐇 Fast"]];
+  const speedBar = () => `<div class="speedbar" title="Audio speed"><span class="muted">Speed</span>${RATES.map(([v, n]) => `<button class="chip ${Math.abs(v - S.prefs.rate) < 0.01 ? "on" : ""}" data-rate="${v}">${n}</button>`).join("")}</div>`;
+  document.addEventListener("click", e => { const b = e.target.closest(".speedbar [data-rate]"); if (!b) return; S.prefs.rate = +b.dataset.rate; save(); refreshChips(); });
   function wirePrefs() {
     const K = [["#t-en", "en"], ["#t-pr", "pr"], ["#t-gc", "gc"]];
     const setChips = () => {
       K.forEach(([s, k]) => { const b = $(s); if (b) b.classList.toggle("on", S.prefs[k]); });
-      const r = $("#t-rate"); if (r) r.textContent = S.prefs.rate < 0.8 ? "🐢 Slow" : S.prefs.rate < 1 ? "🚶 Normal" : "🐇 Fast";
+      const r = $("#t-rate"); if (r) r.textContent = "🔊 Speed: " + (S.prefs.rate < 0.8 ? "🐢 Slow" : S.prefs.rate < 1 ? "🚶 Normal" : "🐇 Fast");
+      document.querySelectorAll(".speedbar [data-rate]").forEach(b => b.classList.toggle("on", Math.abs(+b.dataset.rate - S.prefs.rate) < 0.01));
       document.body.classList.toggle("no-en", !S.prefs.en);
       document.body.classList.toggle("no-pr", !S.prefs.pr);
       document.body.classList.toggle("no-gc", !S.prefs.gc);
     };
     K.forEach(([s, k]) => { const b = $(s); if (b) b.onclick = () => { S.prefs[k] = !S.prefs[k]; save(); setChips(); }; });
     const r = $("#t-rate"); if (r) r.onclick = () => { S.prefs.rate = S.prefs.rate < 0.8 ? 0.9 : S.prefs.rate < 1 ? 1.05 : 0.65; save(); setChips(); };
+    refreshChips = setChips;
     setChips();
   }
   function updateProgress() {
@@ -3201,12 +3211,13 @@ window.TEST = {
   /* ---------- Dialogues ---------- */
   function bubbleAvatar(d, name) { return A.avatar(d.people[name], 40, { outfit: name === d.staff ? (A.SCENES[d.scene] || {}).outfit : null, oc: (A.SCENES[d.scene] || {}).oc }); }
   views.dialogues = (m) => {
-    m.appendChild(secHead("dialogues", "Listen, then read along. <b>▶ Play</b> reads the whole scene. <b>🔁 Shadow</b> pauses after each line so you can repeat it. <b>🎭 Be…</b> lets you take one role: the course reads the other part and waits for you. <b>🙈 Hide text</b> turns it into a listening test."));
+    m.appendChild(secHead("dialogues", "Listen, then read along. <b>▶ Play</b> reads the whole scene. <b>🔁 Shadow</b> pauses after each line so you can repeat it. <b>🎭 Be…</b> lets you take one role: the course reads the other part and waits for you. <b>🙈 Hide text</b> turns it into a listening test. Use the <b>Speed</b> switch on each dialogue (or the 🔊 Speed chip at the top) to slow the voice down."));
     L.dialogues.forEach(d => {
       const names = Object.keys(d.people);
       const card = h(`<div class="card dlg" style="margin-bottom:18px">
         <div class="dlg-head"><div><span class="sit-n">${esc(d.n || "")}</span> ${fr(d.titleFr || d.title, "dtitle")} <span class="muted">· ${esc(d.title)}</span><div class="muted" style="font-size:14px">${tz(d.note || "")}</div></div>
           <div class="row"><button class="btn small" data-act="play">▶ Play</button><button class="btn small" data-act="shadow">🔁 Shadow</button>${names.map(n => `<button class="btn small" data-role="${esc(n)}">🎭 Be ${esc(n.replace(/^(La |Le |L’|L')/i, ""))}</button>`).join("")}<button class="btn small" data-act="hide">🙈 Hide text</button></div></div>
+        ${speedBar()}
         <div class="scene-wrap">${A.scene(d)}</div>
         <div class="shadow-cue"></div>
         <div class="bubbles">${d.lines.map((ln, i) => {
@@ -3649,8 +3660,9 @@ window.TEST = {
 
   /* ---------- Listening ---------- */
   views.listening = (m) => {
-    m.appendChild(secHead("listening", "Train your ear without reading. Each question plays by itself: press ▶ to hear it again. Set 🐢 Slow at the top if it's too fast."));
+    m.appendChild(secHead("listening", "Train your ear without reading. Each question plays by itself: press ▶ to hear it again. Use the Speed switch below if it's too fast."));
     const B = L.classify;
+    m.appendChild(h(speedBar()));
     const pick = h(`<div class="row" style="margin-bottom:14px"><button class="chip on" data-l="words">🔤 Words (10)</button><button class="chip" data-l="lines">💬 Dialogue lines (8)</button><button class="chip" data-l="gender">⚥ Masculin / féminin (8)</button>${B ? `<button class="chip" data-l="cls">${esc(B.label)} (8)</button>` : ""}<button class="chip" data-l="dict">⌨️ Dictée (6)</button></div>`);
     const box = h(`<div></div>`); m.append(pick, box);
     const allLines = L.dialogues.flatMap(d => d.lines.filter(l => d.people[l[0]]).map(l => ({ l, d })));
